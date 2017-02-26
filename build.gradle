@@ -1,0 +1,44 @@
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+
+repositories {
+	jcenter()
+}
+
+//Load the config file for the build script
+ext.configFile = file "build.properties"
+configFile.withReader {
+	def prop = new Properties()
+	prop.load(it)
+	project.ext.config = new ConfigSlurper().parse prop
+}
+
+version = config.version //The version number used globally. Overriden, if build number is available.
+group = config.package //The package, in which our classes are.
+archivesBaseName = config.archiveName //The base naming for our archives.
+mainClassName = config.mainClass
+
+if (System.getenv().BUILD_NUMBER) {
+	//If a build number is present (i.e. we're on Jenkins) it will automatically apply another version suffix.
+	version = "${config.version}.${System.getenv().BUILD_NUMBER}"
+}
+
+processResources {
+	expand 'version': version //Replace ${version} with the version number in the resources.
+}
+
+test {
+	if (System.getenv().JENKINS_HOME != null) {
+		//If we're on the jenkins, allow building, even if tests fail.
+		//Jenkins will still mark the build as unstable.
+		ignoreFailures = true
+	}
+}
+
+jar {
+	manifest {
+		attributes 'Main-Class': config.mainClass
+	}
+}
