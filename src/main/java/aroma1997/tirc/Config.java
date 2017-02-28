@@ -17,7 +17,9 @@ public class Config {
 	
 	private Config(File file) throws IOException {
 		Properties props = new Properties();
-		props.load(new FileInputStream(file));
+		try (FileInputStream fis = new FileInputStream(file)) {
+			props.load(fis);
+		}
 		this.map = props;
 	}
 	
