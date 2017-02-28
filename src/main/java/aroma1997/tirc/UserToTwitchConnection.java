@@ -17,7 +17,11 @@ public class UserToTwitchConnection extends SingleConnection {
 			break;
 		case "NICK":
 			conn.user = message;
+			//Request membership capability, so we get messaged, who is online and who isn't.
 			send("CAP REQ :twitch.tv/membership");
+		case "JOIN":
+			//we need to lowercase nicknames and channel names
+			line = identifier + " " + message.toLowerCase();
 		default:
 			send(line);
 		}
